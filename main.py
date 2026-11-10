@@ -31,7 +31,11 @@ if not BOT_TOKEN:
 BASE_URL = (os.environ.get("WEBHOOK_URL") or os.environ.get("RENDER_EXTERNAL_URL") or "").rstrip("/")
 
 # Telegram-аккаунт менеджера (без @) — на него ведёт кнопка «Написать менеджеру».
-SHOP_CONTACT = (os.environ.get("SHOP_CONTACT") or "Red_line_ST_mr").lstrip("@").strip()
+SHOP_CONTACT = (os.environ.get("SHOP_CONTACT") or "RedLineMeneger").lstrip("@").strip()
+
+# Ссылки на канал с ассортиментом/новостями и на канал с отзывами (можно переопределить переменными окружения).
+CHANNEL_URL = (os.environ.get("CHANNEL_URL") or "https://t.me/+omE97qV0gqczNDQy").strip()
+REVIEWS_URL = (os.environ.get("REVIEWS_URL") or "https://t.me/+JLZOziprvel1ODFi").strip()
 
 # Пароль для входа в админ-панель (/admin). Задаётся в переменных окружения.
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD")
@@ -89,7 +93,7 @@ def delivery_fee_for(goods_total, base_fee=None):
 
 
 PICKUP_POINTS = [
-    p.strip() for p in (os.environ.get("PICKUP_POINTS") or "Кызыл (личная доставка)").split(",") if p.strip()
+    p.strip() for p in (os.environ.get("PICKUP_POINTS") or "Абакан (самовывоз),Абакан (встреча в центре)").split(",") if p.strip()
 ]
 
 # Программа лояльности: 1 балл = 1 рубль
@@ -1302,6 +1306,11 @@ def cmd_start(message: types.Message):
             )
         )
 
+    keyboard.row(
+        types.InlineKeyboardButton(text="📢 Канал", url=CHANNEL_URL),
+        types.InlineKeyboardButton(text="⭐ Отзывы", url=REVIEWS_URL),
+    )
+
     is_admin = bool(message.from_user) and message.from_user.id in ADMIN_CHAT_IDS
     if is_admin:
         keyboard.add(
@@ -1314,10 +1323,14 @@ def cmd_start(message: types.Message):
     bot.send_message(
         message.chat.id,
         "🖤 *RED LINE SHOP*\n\n"
-        "*Кызыл. Всё оригинал.*\n"
-        "Выбирайте товары в каталоге.\n"
-        f"🚚 Доставка — {DELIVERY_FEE} ₽" + (f", при покупке от {FREE_DELIVERY_FROM} ₽ — бесплатно" if FREE_DELIVERY_FROM > 0 else "") + "\n"
-        "📦 Доставка по России — от Пятёрочки: получение на кассах или в постаматах\n\n"
+        "*Абакан. Всё оригинал.*\n"
+        "Выбирайте товары в каталоге.\n\n"
+        "🚚 Встреча в центре и самовывоз — бесплатно\n"
+        "📍 Встреча за центром — 50–200 ₽ (зависит от расстояния)\n"
+        "🏙 Черногорск — бесплатно (в зависимости от закупа)\n"
+        "⚡ Экспресс-доставка — 100–200 ₽\n"
+        "🚕 В другие города — по такси 200–1000 ₽\n\n"
+        "По вопросам вкуса и консультациям — кнопка «Написать менеджеру».\n\n"
         "Нажмите кнопку ниже, чтобы открыть каталог и оформить заказ.",
         reply_markup=keyboard,
         parse_mode="Markdown",
@@ -1339,7 +1352,7 @@ def index():
 
 @app.route("/api/config", methods=["GET"])
 def public_config():
-    return jsonify({"contact": SHOP_CONTACT, "delivery_fee": DELIVERY_FEE,
+    return jsonify({"contact": SHOP_CONTACT, "channel_url": CHANNEL_URL, "reviews_url": REVIEWS_URL, "delivery_fee": DELIVERY_FEE,
                     "free_delivery_from": FREE_DELIVERY_FROM, "pickup_points": PICKUP_POINTS,
                     "cashback_percent": CASHBACK_PERCENT, "max_points_percent": MAX_POINTS_PERCENT,
                     "point_value": POINT_VALUE})

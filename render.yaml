@@ -17,5 +17,9 @@ services:
       - key: DATABASE_URL
         sync: false
       - key: SHOP_CONTACT
-        value: Red_line_ST_mr
+        value: RedLineMeneger
+      - key: CHANNEL_URL
+        value: https://t.me/+omE97qV0gqczNDQy
+      - key: REVIEWS_URL
+        value: https://t.me/+JLZOziprvel1ODFi
     # Данные и фото хранятся в Neon (DATABASE_URL) — Persistent Disk не нужен.
