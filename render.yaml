@@ -22,4 +22,6 @@ services:
         value: https://t.me/+omE97qV0gqczNDQy
       - key: REVIEWS_URL
         value: https://t.me/+JLZOziprvel1ODFi
+      - key: SHOP_TIMEZONE
+        value: Asia/Krasnoyarsk
     # Данные и фото хранятся в Neon (DATABASE_URL) — Persistent Disk не нужен.

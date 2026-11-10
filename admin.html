@@ -364,6 +364,14 @@
   .stock-step:active{transform:scale(.88);}
   .stock-input[type=number]{width:62px;height:32px;padding:0 6px;text-align:center;font-family:var(--font-heading);font-weight:800;font-size:15px;border-radius:10px;-moz-appearance:textfield;}
   .stock-input::-webkit-outer-spin-button,.stock-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+  .v-stock-input[type=number]{width:62px;height:32px;padding:0 6px;text-align:center;font-family:var(--font-heading);font-weight:800;font-size:15px;border-radius:10px;-moz-appearance:textfield;}
+  .v-stock-input::-webkit-outer-spin-button,.v-stock-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+  .flavor-name{flex:1 1 100%;min-width:0;font-size:13px;font-weight:800;overflow-wrap:anywhere;margin-bottom:-2px;}
+  .variant-row{display:flex;gap:8px;align-items:center;margin-bottom:8px;}
+  .variant-row .v-name{flex:1;min-width:0;}
+  .variant-row .v-stock{width:88px;flex:0 0 auto;text-align:center;}
+  .variant-row .v-del{width:42px;height:44px;flex:0 0 auto;border-radius:10px;border:1.5px solid var(--line);background:var(--bg-elev);color:var(--danger);font-size:20px;line-height:1;cursor:pointer;}
+  .variant-row .v-del:active{transform:scale(.9);}
   .stock-state{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:var(--muted);margin-left:auto;}
   .stock-state i{width:8px;height:8px;border-radius:50%;background:var(--muted-dim);}
   .stock-state.ok{color:var(--lime);} .stock-state.ok i{background:var(--lime);box-shadow:0 0 8px rgba(127,217,154,.6);}
@@ -530,6 +538,29 @@
   /* шапка: надпись логотипа Red Line Shop */
   .rl-wm{display:block;flex:0 0 auto;height:26px;width:87px;background:transparent var(--rl-wordmark) center/contain no-repeat;filter:drop-shadow(0 0 8px rgba(230,36,48,.45));}
   @media (max-width:360px){.rl-wm{height:22px;width:73px;}}
+
+  /* ===================== Акции и объявления ===================== */
+  input[type=datetime-local]{
+    width:100%;min-height:48px;background:var(--bg);border:1.5px solid var(--line);color:var(--text);
+    padding:12px 14px;font-family:var(--font-body);font-size:16px;border-radius:8px;outline:none;
+    transition:all .2s var(--ease);color-scheme:dark;-webkit-appearance:none;appearance:none;
+  }
+  input[type=datetime-local]:focus{border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-dim);}
+  .ann-img-box{display:flex;align-items:center;gap:12px;margin-top:2px;}
+  .ann-thumb{width:96px;height:64px;flex:0 0 auto;border-radius:10px;object-fit:cover;border:1.5px solid var(--line);background:var(--bg);}
+  .ann-img-actions{display:flex;gap:8px;flex-wrap:wrap;}
+  .ann-img-actions .btn-outline,.ann-img-actions .btn-danger{padding:8px 14px;font-size:10px;}
+  .ann-drop{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;min-height:64px;border:1.5px dashed var(--line);
+    border-radius:12px;color:var(--muted);font-size:12px;cursor:pointer;transition:all .2s var(--ease);}
+  .ann-drop span{font-size:22px;line-height:1;}
+  .ann-drop:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim);}
+  .ann-drop.uploading{pointer-events:none;opacity:.7;}
+  .ann-card-body{display:flex;gap:12px;align-items:flex-start;min-width:0;}
+  .ann-card-thumb{width:64px;height:64px;flex:0 0 auto;border-radius:10px;object-fit:cover;border:1.5px solid var(--line);position:relative;z-index:1;}
+  .ann-card-main{min-width:0;position:relative;z-index:1;}
+  .ann-pin-mark{color:var(--gold);margin-right:6px;}
+  .ann-card.pinned{border-color:rgba(255,90,99,.5);}
+  .ann-card .card-actions{flex-wrap:wrap;}
 </style>
 </head>
 <body>
@@ -569,10 +600,12 @@
     <button class="tab-btn" data-tab="questions">Вопросы<span class="tab-badge" id="questionsBadge" style="display:none;"></span></button>
     <button class="tab-btn" data-tab="reviews">Отзывы<span class="tab-badge" id="reviewsBadge" style="display:none;"></span></button>
     <button class="tab-btn" data-tab="promos">Промокоды</button>
+    <button class="tab-btn" data-tab="announcements">Акции и объявления</button>
     <span class="tabs-break"></span>
     <button class="tab-btn" data-tab="loyalty">Баллы</button>
     <button class="tab-btn" data-tab="sales">Продажи товаров</button>
     <button class="tab-btn" data-tab="top">Топ товаров</button>
+    <button class="tab-btn" data-tab="ratings">Оценки</button>
     <button class="tab-btn" data-tab="districts">Районы</button>
   </div>
   <div class="muted" id="countLabel"></div>
@@ -619,9 +652,6 @@
     <label>Старая цена, ₽ <span class="muted" style="text-transform:none;letter-spacing:0;">— необязательно, покажется зачёркнутой рядом с новой ценой</span></label>
     <input type="number" id="fOldPrice" placeholder="2100">
 
-    <label>Остаток на складе, шт. <span class="muted" style="text-transform:none;letter-spacing:0;">— покупатели видят «Осталось N шт.»; пусто = учёт не ведётся</span></label>
-    <input type="number" id="fStock" min="0" inputmode="numeric" placeholder="25">
-
     <label>Бейдж на карточке</label>
     <div class="badge-picker" id="badgePicker">
       <button type="button" class="badge-opt" data-badge="">Нет</button>
@@ -631,8 +661,26 @@
       <button type="button" class="badge-opt" data-badge="instock">В наличии</button>
     </div>
 
-    <label>Вкусы / цвета <span class="muted" style="text-transform:none;letter-spacing:0;">— через запятую</span></label>
-    <input type="text" id="fSizes" placeholder="Виноград, Манго, Ледяная мята">
+    <label>Остаток и вкусы</label>
+    <div class="badge-picker" id="stockModePicker">
+      <button type="button" class="badge-opt" data-mode="single">Общий остаток</button>
+      <button type="button" class="badge-opt" data-mode="variants">Остаток по вкусам</button>
+    </div>
+
+    <div id="legacyBox">
+      <label>Остаток на складе, шт. <span class="muted" style="text-transform:none;letter-spacing:0;">— покупатели видят «Осталось N шт.»; пусто = учёт не ведётся</span></label>
+      <input type="number" id="fStock" min="0" inputmode="numeric" placeholder="25">
+
+      <label>Вкусы / цвета <span class="muted" style="text-transform:none;letter-spacing:0;">— через запятую</span></label>
+      <input type="text" id="fSizes" placeholder="Виноград, Манго, Ледяная мята">
+    </div>
+
+    <div id="variantsBox" style="display:none;">
+      <div class="muted" style="font-size:12px;margin:8px 0 10px;line-height:1.45;">Для каждого вкуса — свой остаток. Покупатель выбирает вкус и количество, больше остатка заказать нельзя. Пусто = для этого вкуса учёт не ведётся.</div>
+      <div id="variantsList"></div>
+      <button type="button" class="btn-outline" id="variantAddBtn" style="width:100%;">+ Добавить вкус</button>
+      <div class="muted" id="variantsTotal" style="font-size:12px;margin-top:8px;"></div>
+    </div>
 
     <label>Описание</label>
     <textarea id="fDesc" placeholder="Ресурс, особенности, комплектация"></textarea>
@@ -685,6 +733,49 @@
     <div class="modal-actions">
       <button class="btn-outline" id="promoCancelBtn">Отмена</button>
       <button class="btn" id="promoSaveBtn">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="annOverlay">
+  <div class="modal">
+    <div class="modal-title" id="annModalTitle">Новое объявление</div>
+    <div class="muted" id="annModalSub">покупатели увидят его в блоке над каталогом</div>
+
+    <label>Изображение <span class="muted" style="text-transform:none;letter-spacing:0;">— необязательно</span></label>
+    <div class="ann-img-box" id="annImgBox"></div>
+    <input type="file" id="annImgInput" accept="image/*" style="display:none;">
+
+    <label>Заголовок</label>
+    <input type="text" id="aTitle" maxlength="120" placeholder="Скидка 10% на жидкости">
+
+    <label>Текст</label>
+    <textarea id="aText" maxlength="2000" placeholder="Условия акции, подробности, адрес"></textarea>
+
+    <label>Ссылка <span class="muted" style="text-transform:none;letter-spacing:0;">— необязательно, появится кнопка «Подробнее»</span></label>
+    <input type="text" id="aLink" inputmode="url" autocapitalize="off" autocorrect="off" placeholder="https://… или @username">
+
+    <label>Начало публикации <span class="muted" style="text-transform:none;letter-spacing:0;">— пусто = показывать сразу</span></label>
+    <input type="datetime-local" id="aStart">
+
+    <label>Окончание публикации <span class="muted" style="text-transform:none;letter-spacing:0;">— пусто = без срока; после этого времени объявление скроется само</span></label>
+    <input type="datetime-local" id="aEnd">
+    <div class="muted" style="margin-top:6px;">Время — по часовому поясу магазина.</div>
+
+    <label class="loy-switch">
+      <span>Показывать покупателям<small>Выключенное объявление скрыто, но не удаляется</small></span>
+      <input type="checkbox" id="aActive"><span class="sw"></span>
+    </label>
+    <label class="loy-switch">
+      <span>Закрепить сверху<small>Закреплённые объявления всегда идут первыми</small></span>
+      <input type="checkbox" id="aPinned"><span class="sw"></span>
+    </label>
+
+    <div class="error" id="annFormError"></div>
+
+    <div class="modal-actions">
+      <button class="btn-outline" id="annCancelBtn">Отмена</button>
+      <button class="btn" id="annSaveBtn">Сохранить</button>
     </div>
   </div>
 </div>
@@ -774,6 +865,9 @@ let uploadedImages = [];
 let editingPromoId = null;
 let selectedPromoType = 'percent';
 let selectedPromoActive = true;
+let announcements = null;
+let editingAnnId = null;
+let annImage = '';
 
 async function api(path, opts={}){
   const res = await fetch(path, {
@@ -845,7 +939,7 @@ async function enterApp(){
   await loadPromos();
 }
 
-const TAB_TITLES = { products:'Товары', orders:'Заказы', questions:'Вопросы', reviews:'Отзывы', promos:'Промокоды', loyalty:'Баллы покупателей', sales:'Продажи товаров', top:'Топ товаров', districts:'Районы доставки' };
+const TAB_TITLES = { products:'Товары', orders:'Заказы', questions:'Вопросы', reviews:'Отзывы', ratings:'Оценки товаров', promos:'Промокоды', announcements:'Акции и объявления', loyalty:'Баллы покупателей', sales:'Продажи товаров', top:'Топ товаров', districts:'Районы доставки' };
 
 document.querySelectorAll('.tab-btn').forEach(btn=>{
   btn.onclick = async () => {
@@ -853,7 +947,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
     currentTab = btn.dataset.tab;
-    document.getElementById('addBtn').style.display = (currentTab === 'products' || currentTab === 'promos') ? 'flex' : 'none';
+    document.getElementById('addBtn').style.display = (currentTab === 'products' || currentTab === 'promos' || currentTab === 'announcements') ? 'flex' : 'none';
     document.getElementById('viewTitle').textContent = TAB_TITLES[currentTab] || '';
     if (currentTab === 'products'){
       await loadProducts();
@@ -866,6 +960,10 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     } else if (currentTab === 'reviews'){
       await loadReviews();
       renderReviews();
+    } else if (currentTab === 'ratings'){
+      document.getElementById('list').innerHTML = '<div class="empty">Загрузка…</div>';
+      try { await loadRatings(); } catch(e){ showToast(e.message); ratingsData = null; }
+      if (currentTab === 'ratings') renderRatings();
     } else if (currentTab === 'districts'){
       document.getElementById('list').innerHTML = '<div class="empty">Загрузка…</div>';
       try { districts = await api('/api/admin/districts'); } catch(e){ showToast(e.message); districts = null; }
@@ -881,6 +979,10 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     } else if (currentTab === 'loyalty'){
       try { await loadLoyalty(); } catch(e){ showToast(e.message); }
       if (currentTab === 'loyalty') renderLoyalty();
+    } else if (currentTab === 'announcements'){
+      document.getElementById('list').innerHTML = '<div class="empty">Загрузка…</div>';
+      try { await loadAnnouncements(); } catch(e){ showToast(e.message); announcements = null; }
+      if (currentTab === 'announcements') renderAnnouncements();
     } else {
       await loadPromos();
       renderPromos();
@@ -905,8 +1007,9 @@ async function loadProducts(){
 
 function renderList(){
   const list = document.getElementById('list');
-  const lowN = products.filter(p => p.stock != null && p.stock > 0 && p.stock <= 3).length;
-  const outN = products.filter(p => p.stock != null && p.stock <= 0).length;
+  const hasVar = p => Array.isArray(p.variants) && p.variants.length > 0;
+  const lowN = products.filter(p => hasVar(p) ? p.variants.some(v => v.stock != null && v.stock > 0 && v.stock <= 3) : (p.stock != null && p.stock > 0 && p.stock <= 3)).length;
+  const outN = products.filter(p => hasVar(p) ? p.variants.every(v => v.stock != null && v.stock <= 0) : (p.stock != null && p.stock <= 0)).length;
   document.getElementById('countLabel').textContent = `${products.length} товар(ов)` + (lowN ? ` · заканчивается: ${lowN}` : '') + (outN ? ` · нет в наличии: ${outN}` : '');
   if (products.length===0){
     list.innerHTML = '<div class="empty">Пока нет ни одного товара — нажмите «+», чтобы добавить.</div>';
@@ -923,9 +1026,9 @@ function renderList(){
         <div class="card-title">${p.name || '(без названия)'}</div>
         <div class="card-sub">${p.category || '—'}${p.subcategory ? ' › ' + p.subcategory : ''} · ${priceLineHTML(p)}${badgeTag}</div>
         <div class="card-sub">${p.cost_price != null ? `Закупка: ${fmt(p.cost_price)} · Прибыль с шт.: <b style="color:${p.unit_profit < 0 ? 'var(--danger)' : 'var(--lime)'};">${fmt(p.unit_profit)}</b>` : 'Закупочная цена не указана'}</div>
-        <div class="card-sub">Вкусы / цвета: ${(p.sizes||[]).join(', ')}</div>
+        ${(p.variants && p.variants.length) ? '' : `<div class="card-sub">Вкусы / цвета: ${(p.sizes||[]).join(', ')}</div>`}
         <div class="card-sub">${photoCount ? `Фото: ${photoCount}` : 'Без фото'}</div>
-        ${stockRowHTML(p)}
+        ${(p.variants && p.variants.length) ? variantsRowHTML(p) : stockRowHTML(p)}
         <div class="card-actions">
           <button class="btn-outline btn-icon-label" data-edit="${p.id}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>Изменить</button>
           <button class="btn-danger btn-icon-label" data-del="${p.id}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16"/><path d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/><path d="M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3"/></svg>Удалить</button>
@@ -944,6 +1047,12 @@ function renderList(){
   list.querySelectorAll('.stock-input').forEach(inp => inp.onchange = () => {
     const raw = inp.value.trim();
     setStock(Number(inp.dataset.id), raw === '' ? null : Math.max(0, Math.floor(Number(raw)) || 0));
+  });
+  list.querySelectorAll('[data-vstep]').forEach(b => b.onclick = () =>
+    setVariantStock(Number(b.dataset.id), b.dataset.name, { delta: Number(b.dataset.vstep) }));
+  list.querySelectorAll('.v-stock-input').forEach(inp => inp.onchange = () => {
+    const raw = inp.value.trim();
+    setVariantStock(Number(inp.dataset.id), inp.dataset.name, { stock: raw === '' ? null : Math.max(0, Math.floor(Number(raw)) || 0) });
   });
   list.querySelectorAll('[data-del]').forEach(b => b.onclick = () => deleteProduct(Number(b.dataset.del)));
 }
@@ -965,6 +1074,45 @@ function stockRowHTML(p){
     <button class="stock-step" type="button" data-stock-step="1" data-id="${p.id}" aria-label="Плюс один">+</button>
     <span class="stock-state ${st.cls}"><i></i>${st.text}</span>
   </div>`;
+}
+
+function vEsc(v){ return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+// блок «остаток по вкусам» в карточке товара: у каждого вкуса свой счётчик
+function variantsRowHTML(p){
+  const rows = p.variants.map(v => {
+    const st = stockState(v.stock);
+    return `<div class="stock-row">
+      <span class="flavor-name">${vEsc(v.name)}</span>
+      <button class="stock-step" type="button" data-vstep="-1" data-id="${p.id}" data-name="${vEsc(v.name)}" aria-label="Минус один">−</button>
+      <input class="v-stock-input" type="number" min="0" inputmode="numeric" placeholder="∞" data-id="${p.id}" data-name="${vEsc(v.name)}" value="${v.stock == null ? '' : v.stock}">
+      <button class="stock-step" type="button" data-vstep="1" data-id="${p.id}" data-name="${vEsc(v.name)}" aria-label="Плюс один">+</button>
+      <span class="stock-state ${st.cls}"><i></i>${st.text}</span>
+    </div>`;
+  }).join('');
+  const total = p.stock == null ? 'у части вкусов учёт не ведётся' : `${p.stock} шт.`;
+  return `<div class="stock-label" style="margin-top:12px;">Остаток по вкусам · всего: ${total}</div>${rows}`;
+}
+
+async function setVariantStock(id, name, body){
+  const p = products.find(x => x.id === id);
+  const v = p && (p.variants || []).find(x => x.name === name);
+  if (!v) return;
+  const prev = v.stock, prevTotal = p.stock;
+  v.stock = ('delta' in body) ? Math.max(0, (prev == null ? 0 : prev) + body.delta) : body.stock;
+  p.stock = p.variants.some(x => x.stock == null) ? null : p.variants.reduce((s, x) => s + x.stock, 0);
+  renderList();
+  try {
+    const updated = await api(`/api/admin/products/${id}/variant-stock`, {
+      method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ name, ...body })
+    });
+    products = products.map(x => x.id === id ? updated : x);
+    renderList();
+  } catch(e){
+    v.stock = prev; p.stock = prevTotal;
+    renderList();
+    showToast(e.message);
+  }
 }
 
 async function setStock(id, value){
@@ -1032,7 +1180,7 @@ function renderOrders(){
         </div>
         <span class="status-badge status-${o.status}">${statusLabel(o.status)}</span>
       </div>
-      <div class="order-items">${(o.items||[]).map(i=>`${i.name} (${i.size||'—'}) × ${i.qty}` + (i.profit != null ? ` <span class="muted">· закупка ${fmt(i.cost_price)} · прибыль ${fmt(i.unit_profit)}/шт. = <b style="color:${i.profit < 0 ? 'var(--danger)' : 'var(--lime)'};">${fmt(i.profit)}</b></span>` : ` <span class="muted">· закупка не указана</span>`)).join('<br>')}</div>
+      <div class="order-items">${(o.items||[]).map(i=>(i.flavor ? `${i.name} — вкус: <b>${vEsc(i.flavor)}</b> × <b>${i.qty}</b>` : `${i.name} (${i.size||'—'}) × ${i.qty}`) + (i.profit != null ? ` <span class="muted">· закупка ${fmt(i.cost_price)} · прибыль ${fmt(i.unit_profit)}/шт. = <b style="color:${i.profit < 0 ? 'var(--danger)' : 'var(--lime)'};">${fmt(i.profit)}</b></span>` : ` <span class="muted">· закупка не указана</span>`)).join('<br>')}</div>
       ${o.delivery ? `<div class="card-sub" style="color:var(--text);line-height:1.7;">${o.delivery.mode==='delivery' ? '🚚 Доставка: '+(o.delivery.district ? o.delivery.district+', ' : '')+(o.delivery.address||'—')+' (+'+fmt(o.delivery.fee||0)+')'+(o.delivery.payment_method ? '<br>💳 '+({prepay:'Предоплата',courier:'Оплата курьеру по договорённости'}[o.delivery.payment_method]||o.delivery.payment_method) : '') : '📍 Самовывоз: '+(o.delivery.point||'—')}<br>${o.delivery.asap ? '⚡ Как можно скорее' : '🕒 '+(o.delivery.date||'').split('-').reverse().slice(0,2).join('.')+' в '+(o.delivery.time||'')}</div>` : ''}
       ${o.discount ? `<div class="card-sub">Промокод: ${o.promo_code} (−${fmt(o.discount)}) · Сумма товаров: ${fmt(o.subtotal)}</div>` : ''}
       <div class="card-sub">Итого: ${fmt(o.total)}</div>
@@ -1601,6 +1749,122 @@ async function deleteReview(id){
   }
 }
 
+// --- Оценки товаров (1–5 звёзд) -------------------------------------
+
+let ratingsData = null;      // { ratings, total, limit, summary }
+let ratingsProduct = '';     // id товара в фильтре ('' — все товары)
+
+const ratingStars = n => '★'.repeat(n) + '☆'.repeat(5 - n);
+
+async function loadRatings(){
+  const q = ratingsProduct ? `?product_id=${encodeURIComponent(ratingsProduct)}` : '';
+  ratingsData = await api('/api/admin/ratings' + q);
+  // у выбранного товара не осталось оценок — возвращаемся ко всем
+  if (ratingsProduct && !ratingsData.summary.some(s => String(s.product_id) === String(ratingsProduct))){
+    ratingsProduct = '';
+    ratingsData = await api('/api/admin/ratings');
+  }
+}
+
+async function reloadRatings(){
+  try { await loadRatings(); } catch(e){ showToast(e.message); }
+  if (currentTab === 'ratings') renderRatings();
+}
+
+function renderRatings(){
+  const list = document.getElementById('list');
+  const d = ratingsData;
+  if (!d){
+    document.getElementById('countLabel').textContent = '';
+    list.innerHTML = '<div class="empty">Не удалось загрузить оценки.</div>';
+    return;
+  }
+  const all = d.summary.reduce((s, x) => s + x.count, 0);
+  document.getElementById('countLabel').textContent = all
+    ? `${all} оценок · товаров с оценками: ${d.summary.length}` : '';
+  if (!all){
+    list.innerHTML = '<div class="empty">Покупатели пока не ставили оценок товарам.</div>';
+    return;
+  }
+
+  const sel = d.summary.find(s => String(s.product_id) === String(ratingsProduct));
+  const options = ['<option value="">Все товары</option>'].concat(d.summary.map(s =>
+    `<option value="${s.product_id}" ${sel && sel.product_id === s.product_id ? 'selected' : ''}>${escR(s.product_name)} — ★ ${s.avg.toFixed(1)} (${s.count})</option>`
+  )).join('');
+
+  let html = `
+    <div class="order-card" style="padding:14px;">
+      <label style="margin-top:0;">Товар</label>
+      <select id="ratingsProductSel" class="order-status-select">${options}</select>
+      ${sel ? `
+        <div class="order-items" style="margin:12px 0 0;">
+          Средняя оценка: <b style="color:var(--gold);">★ ${sel.avg.toFixed(1)}</b> из 5 · оценок: ${sel.count}
+        </div>
+        <div class="card-actions" style="margin-top:10px;">
+          <button class="btn-danger" id="ratingsResetBtn">Сбросить все оценки товара</button>
+        </div>` : ''}
+    </div>`;
+
+  html += d.ratings.map(r => {
+    const who = escR(r.author_name || 'Без имени') + (r.username ? ` (@${escR(r.username)})` : '');
+    const changed = r.updated_at && r.created_at && Math.abs(new Date(r.updated_at) - new Date(r.created_at)) > 1500;
+    return `
+    <div class="order-card">
+      <div class="order-head">
+        <div>
+          <div class="order-id">${escR(r.product_name)}</div>
+          <div class="order-date">${who} · ID ${escR(r.telegram_id)} · ${new Date(r.updated_at || r.created_at).toLocaleString('ru-RU')}${changed ? ' · изменена' : ''}</div>
+        </div>
+        <span class="status-badge status-new">${r.rating}/5</span>
+      </div>
+      <div class="order-items"><span style="color:var(--gold);letter-spacing:.12em;">${ratingStars(r.rating)}</span></div>
+      <div class="card-actions" style="margin-top:4px;">
+        <button class="btn-danger" data-rating-del="${r.id}">Удалить</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  if (d.total > d.ratings.length){
+    html += `<div class="muted" style="text-align:center;margin:4px 0 18px;">Показаны последние ${d.ratings.length} из ${d.total}. Выберите товар, чтобы увидеть его оценки.</div>`;
+  }
+  list.innerHTML = html;
+
+  document.getElementById('ratingsProductSel').onchange = async (e) => {
+    ratingsProduct = e.target.value;
+    list.innerHTML = '<div class="empty">Загрузка…</div>';
+    await reloadRatings();
+  };
+  const resetBtn = document.getElementById('ratingsResetBtn');
+  if (resetBtn && sel) resetBtn.onclick = () => resetProductRatings(sel);
+  list.querySelectorAll('[data-rating-del]').forEach(btn => {
+    btn.onclick = () => deleteRating(Number(btn.dataset.ratingDel));
+  });
+}
+
+async function deleteRating(id){
+  const r = ratingsData && ratingsData.ratings.find(x => x.id === id);
+  const label = r ? ` ${r.rating}/5 от ${r.author_name || 'покупателя'} (ID ${r.telegram_id}) для «${r.product_name}»` : '';
+  if (!confirm(`Удалить оценку${label}?\nПокупатель сможет оценить товар заново.`)) return;
+  try {
+    await api(`/api/admin/ratings/${id}`, { method:'DELETE' });
+    showToast('Оценка удалена');
+  } catch(e){
+    showToast(e.message);
+  }
+  await reloadRatings();
+}
+
+async function resetProductRatings(s){
+  if (!confirm(`Удалить ВСЕ оценки (${s.count}) товара «${s.product_name}»?\nДействие нельзя отменить.`)) return;
+  try {
+    const res = await api(`/api/admin/products/${s.product_id}/ratings`, { method:'DELETE' });
+    showToast(`Удалено оценок: ${res.deleted}`);
+  } catch(e){
+    showToast(e.message);
+  }
+  await reloadRatings();
+}
+
 // --- Promos ----------------------------------------------------------
 
 function promoValueLabel(p){
@@ -1752,6 +2016,215 @@ document.getElementById('promoSaveBtn').onclick = async () => {
   }
 };
 
+// --- Акции и объявления -----------------------------------------------
+
+const ANN_STATES = {
+  active:    ['Показывается', 'status-done'],
+  scheduled: ['Запланировано', 'status-new'],
+  expired:   ['Срок истёк', 'status-cancelled'],
+  disabled:  ['Выключено', 'status-cancelled']
+};
+
+function ruPlural(n, one, few, many){
+  const m10 = n % 10, m100 = n % 100;
+  if (m10 === 1 && m100 !== 11) return one;
+  if (m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20)) return few;
+  return many;
+}
+function annFmtDT(v){
+  if (!v) return '';
+  const [d, t] = v.split('T');
+  const [y, m, day] = d.split('-');
+  return `${day}.${m}.${y} ${t}`;
+}
+function annPeriodText(a){
+  if (a.starts_at && a.ends_at) return `${annFmtDT(a.starts_at)} — ${annFmtDT(a.ends_at)}`;
+  if (a.starts_at) return `С ${annFmtDT(a.starts_at)}, без окончания`;
+  if (a.ends_at) return `До ${annFmtDT(a.ends_at)}`;
+  return 'Без срока — показывается постоянно';
+}
+function sortAnnouncements(){
+  announcements.sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || b.id - a.id);
+}
+async function loadAnnouncements(){
+  announcements = await api('/api/admin/announcements');
+}
+
+function renderAnnouncements(){
+  const list = document.getElementById('list');
+  const countLabel = document.getElementById('countLabel');
+  if (!announcements){ countLabel.textContent = ''; list.innerHTML = '<div class="empty">Не удалось загрузить данные.</div>'; return; }
+  const n = announcements.length;
+  const live = announcements.filter(a => a.state === 'active').length;
+  countLabel.textContent = n ? `${n} ${ruPlural(n, 'объявление', 'объявления', 'объявлений')} · показывается: ${live}` : '';
+  if (!n){
+    list.innerHTML = '<div class="empty">Пока нет ни одной акции или объявления — нажмите «+», чтобы создать.</div>';
+    return;
+  }
+  list.innerHTML = announcements.map(a => {
+    const [stLabel, stCls] = ANN_STATES[a.state] || ANN_STATES.disabled;
+    const preview = (a.text || '').length > 140 ? a.text.slice(0, 140) + '…' : (a.text || '');
+    return `
+    <div class="order-card ann-card ${a.pinned ? 'pinned' : ''}">
+      <div class="order-head">
+        <div class="ann-card-body">
+          ${a.image ? `<img class="ann-card-thumb" src="${escR(a.image)}" alt="">` : ''}
+          <div class="ann-card-main">
+            <div class="order-id">${a.pinned ? '<span class="ann-pin-mark" title="Закреплено">📌</span>' : ''}${escR(a.title)}</div>
+            <div class="order-date">${escR(annPeriodText(a))}</div>
+          </div>
+        </div>
+        <span class="status-badge ${stCls}">${stLabel}</span>
+      </div>
+      ${preview ? `<div class="card-sub" style="white-space:pre-line;">${escR(preview)}</div>` : ''}
+      ${a.link ? `<div class="card-sub">Ссылка: ${escR(a.link)}</div>` : ''}
+      <div class="card-actions" style="margin-top:11px;">
+        <button class="btn-outline" data-ann-edit="${a.id}">Изменить</button>
+        <button class="btn-outline" data-ann-toggle="${a.id}">${a.active ? 'Выключить' : 'Включить'}</button>
+        <button class="btn-outline" data-ann-pin="${a.id}">${a.pinned ? 'Открепить' : 'Закрепить'}</button>
+        <button class="btn-danger" data-ann-del="${a.id}">Удалить</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  list.querySelectorAll('[data-ann-edit]').forEach(b => b.onclick = () => openAnnModal(Number(b.dataset.annEdit)));
+  list.querySelectorAll('[data-ann-toggle]').forEach(b => b.onclick = () => patchAnnouncement(Number(b.dataset.annToggle), a => ({ active: !a.active }),
+    u => u.active ? 'Объявление включено' : 'Объявление выключено'));
+  list.querySelectorAll('[data-ann-pin]').forEach(b => b.onclick = () => patchAnnouncement(Number(b.dataset.annPin), a => ({ pinned: !a.pinned }),
+    u => u.pinned ? 'Закреплено сверху' : 'Откреплено'));
+  list.querySelectorAll('[data-ann-del]').forEach(b => b.onclick = () => deleteAnnouncement(Number(b.dataset.annDel)));
+}
+
+async function patchAnnouncement(id, makeBody, okMsg){
+  const a = announcements.find(x => x.id === id);
+  if (!a) return;
+  try {
+    const updated = await api(`/api/admin/announcements/${id}`, {
+      method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(makeBody(a))
+    });
+    announcements = announcements.map(x => x.id === id ? updated : x);
+    sortAnnouncements();
+    renderAnnouncements();
+    showToast(okMsg(updated));
+  } catch(e){ showToast(e.message); }
+}
+
+async function deleteAnnouncement(id){
+  if (!confirm('Удалить это объявление?')) return;
+  try {
+    await api(`/api/admin/announcements/${id}`, { method:'DELETE' });
+    announcements = announcements.filter(x => x.id !== id);
+    renderAnnouncements();
+    showToast('Объявление удалено');
+  } catch(e){ showToast(e.message); }
+}
+
+function renderAnnImage(uploading){
+  const box = document.getElementById('annImgBox');
+  if (uploading){
+    box.innerHTML = '<div class="ann-drop uploading">Загрузка…</div>';
+    return;
+  }
+  if (annImage){
+    box.innerHTML = `<img class="ann-thumb" src="${escR(annImage)}" alt="">
+      <div class="ann-img-actions">
+        <button type="button" class="btn-outline" id="annImgChange">Заменить</button>
+        <button type="button" class="btn-danger" id="annImgRemove">Убрать</button>
+      </div>`;
+    document.getElementById('annImgChange').onclick = () => document.getElementById('annImgInput').click();
+    document.getElementById('annImgRemove').onclick = () => { annImage = ''; renderAnnImage(); };
+  } else {
+    box.innerHTML = '<div class="ann-drop" id="annImgAdd"><span>+</span>Загрузить изображение</div>';
+    document.getElementById('annImgAdd').onclick = () => document.getElementById('annImgInput').click();
+  }
+}
+
+document.getElementById('annImgInput').addEventListener('change', async (e) => {
+  const file = (e.target.files || [])[0];
+  e.target.value = '';
+  if (!file) return;
+  renderAnnImage(true);
+  try {
+    const fd = new FormData();
+    fd.append('file', file);
+    const res = await fetch('/api/admin/upload', { method:'POST', headers:{ 'X-Admin-Password': pwd }, body: fd });
+    if (!res.ok){
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Не удалось загрузить фото');
+    }
+    annImage = (await res.json()).url;
+  } catch(err){
+    showToast(err.message);
+  }
+  renderAnnImage();
+});
+
+function openAnnModal(id){
+  editingAnnId = id || null;
+  document.getElementById('annFormError').textContent = '';
+  const a = id ? announcements.find(x => x.id === id) : null;
+  document.getElementById('annModalTitle').textContent = a ? 'Изменить объявление' : 'Новое объявление';
+  document.getElementById('annModalSub').textContent = a ? a.title : 'покупатели увидят его в блоке над каталогом';
+  document.getElementById('aTitle').value = a?.title || '';
+  document.getElementById('aText').value = a?.text || '';
+  document.getElementById('aLink').value = a?.link || '';
+  document.getElementById('aStart').value = a?.starts_at || '';
+  document.getElementById('aEnd').value = a?.ends_at || '';
+  document.getElementById('aActive').checked = a ? !!a.active : true;
+  document.getElementById('aPinned').checked = a ? !!a.pinned : false;
+  annImage = a?.image || '';
+  renderAnnImage();
+  document.getElementById('annOverlay').classList.add('open');
+}
+function closeAnnModal(){
+  document.getElementById('annOverlay').classList.remove('open');
+}
+document.getElementById('annCancelBtn').onclick = closeAnnModal;
+document.getElementById('annOverlay').addEventListener('click', e => { if (e.target.id === 'annOverlay') closeAnnModal(); });
+
+document.getElementById('annSaveBtn').onclick = async () => {
+  const title = document.getElementById('aTitle').value.trim();
+  const errEl = document.getElementById('annFormError');
+  if (!title){ errEl.textContent = 'Укажите заголовок'; return; }
+  const start = document.getElementById('aStart').value;
+  const end = document.getElementById('aEnd').value;
+  if (start && end && end <= start){ errEl.textContent = 'Окончание публикации должно быть позже начала'; return; }
+  errEl.textContent = '';
+  const payload = {
+    title,
+    text: document.getElementById('aText').value,
+    image: annImage,
+    link: document.getElementById('aLink').value.trim(),
+    starts_at: start, ends_at: end,
+    active: document.getElementById('aActive').checked,
+    pinned: document.getElementById('aPinned').checked,
+  };
+  const btn = document.getElementById('annSaveBtn');
+  btn.disabled = true;
+  try {
+    if (editingAnnId){
+      const updated = await api(`/api/admin/announcements/${editingAnnId}`, {
+        method:'PUT', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload)
+      });
+      announcements = announcements.map(x => x.id === editingAnnId ? updated : x);
+      showToast('Объявление обновлено');
+    } else {
+      const created = await api('/api/admin/announcements', {
+        method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload)
+      });
+      announcements = (announcements || []).concat(created);
+      showToast('Объявление создано');
+    }
+    sortAnnouncements();
+    renderAnnouncements();
+    closeAnnModal();
+  } catch(e){
+    errEl.textContent = e.message;
+  } finally {
+    btn.disabled = false;
+  }
+};
+
 // --- Modal / form ------------------------------------------------------
 
 function renderSwatchPicker(){
@@ -1797,6 +2270,9 @@ function openModal(id){
   updateProfitHint();
   document.getElementById('fStock').value = (p && p.stock != null) ? p.stock : '';
   document.getElementById('fSizes').value = (p?.sizes||[]).join(', ');
+  variantRows = (p?.variants || []).map(v => ({ name: v.name, stock: v.stock == null ? '' : v.stock }));
+  renderVariantRows();
+  setStockMode(variantRows.length ? 'variants' : 'single');
   document.getElementById('fDesc').value = p?.desc || '';
   selectedSwatch = p?.swatch || 0;
   selectedBadge = p?.badge || '';
@@ -1808,6 +2284,51 @@ function openModal(id){
   document.getElementById('overlay').classList.add('open');
 }
 
+// --- вкусы товара: у каждого свой остаток ---
+let stockMode = 'single';
+let variantRows = [];            // [{name, stock: '' | число}]
+function setStockMode(mode){
+  stockMode = mode;
+  document.querySelectorAll('#stockModePicker .badge-opt').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+  document.getElementById('legacyBox').style.display = mode === 'single' ? '' : 'none';
+  document.getElementById('variantsBox').style.display = mode === 'variants' ? '' : 'none';
+}
+document.querySelectorAll('#stockModePicker .badge-opt').forEach(b => b.onclick = () => {
+  if (b.dataset.mode === 'variants' && !variantRows.length){
+    // переносим то, что уже введено в «Вкусы / цвета» (и общий остаток, если вкус один)
+    const names = document.getElementById('fSizes').value.split(',').map(x => x.trim()).filter(Boolean);
+    const total = document.getElementById('fStock').value.trim();
+    variantRows = names.length ? names.map(n => ({ name:n, stock: names.length === 1 ? total : '' })) : [{ name:'', stock:'' }];
+    renderVariantRows();
+  }
+  setStockMode(b.dataset.mode);
+});
+function updateVariantsTotal(){
+  const rows = variantRows.filter(r => String(r.name).trim());
+  const unlimited = rows.some(r => String(r.stock).trim() === '');
+  const sum = rows.reduce((s, r) => s + (Number(r.stock) || 0), 0);
+  document.getElementById('variantsTotal').textContent = rows.length
+    ? `Вкусов: ${rows.length} · ` + (unlimited ? 'у части вкусов учёт не ведётся' : `всего на складе: ${sum} шт.`) : '';
+}
+function renderVariantRows(){
+  const box = document.getElementById('variantsList');
+  box.innerHTML = variantRows.map((r, i) => `<div class="variant-row">
+      <input type="text" class="v-name" data-i="${i}" maxlength="60" placeholder="Вкус, напр. Манго" value="${vEsc(r.name)}">
+      <input type="number" class="v-stock" data-i="${i}" min="0" inputmode="numeric" placeholder="∞" value="${vEsc(r.stock)}" aria-label="Остаток, шт.">
+      <button type="button" class="v-del" data-i="${i}" aria-label="Удалить вкус">×</button>
+    </div>`).join('');
+  box.querySelectorAll('.v-name').forEach(inp => inp.oninput = () => { variantRows[Number(inp.dataset.i)].name = inp.value; updateVariantsTotal(); });
+  box.querySelectorAll('.v-stock').forEach(inp => inp.oninput = () => { variantRows[Number(inp.dataset.i)].stock = inp.value; updateVariantsTotal(); });
+  box.querySelectorAll('.v-del').forEach(btn => btn.onclick = () => { variantRows.splice(Number(btn.dataset.i), 1); renderVariantRows(); });
+  updateVariantsTotal();
+}
+document.getElementById('variantAddBtn').onclick = () => {
+  variantRows.push({ name:'', stock:'' });
+  renderVariantRows();
+  const names = document.querySelectorAll('#variantsList .v-name');
+  if (names.length) names[names.length - 1].focus();
+};
+
 function closeModal(){
   document.getElementById('overlay').classList.remove('open');
 }
@@ -1815,6 +2336,7 @@ document.getElementById('cancelBtn').onclick = closeModal;
 document.getElementById('overlay').addEventListener('click', e=>{ if(e.target.id==='overlay') closeModal(); });
 document.getElementById('addBtn').onclick = () => {
   if (currentTab === 'promos') openPromoModal(null);
+  else if (currentTab === 'announcements') openAnnModal(null);
   else openModal(null);
 };
 
@@ -1891,7 +2413,36 @@ document.getElementById('saveBtn').onclick = async () => {
     return;
   }
 
+  let variantsPayload = [];
+  if (stockMode === 'variants'){
+    const seen = new Set();
+    for (const r of variantRows){
+      const nm = String(r.name || '').trim().replace(/\s+/g, ' ');
+      if (!nm) continue;
+      if (seen.has(nm.toLowerCase())){
+        document.getElementById('formError').textContent = `Вкус «${nm}» указан дважды`;
+        return;
+      }
+      seen.add(nm.toLowerCase());
+      const raw = String(r.stock).trim();
+      let st = null;
+      if (raw !== ''){
+        const n = Number(raw);
+        if (!Number.isFinite(n) || n < 0){
+          document.getElementById('formError').textContent = `Некорректный остаток у вкуса «${nm}»`;
+          return;
+        }
+        st = Math.floor(n);
+      }
+      variantsPayload.push({ name: nm, stock: st });
+    }
+    if (!variantsPayload.length){
+      document.getElementById('formError').textContent = 'Добавьте хотя бы один вкус или выберите «Общий остаток»';
+      return;
+    }
+  }
   const payload = { name, category, subcategory: document.getElementById('fSub').value.trim(), price, old_price: oldPrice, cost_price: document.getElementById('fCostPrice').value, stock: document.getElementById('fStock').value, badge: selectedBadge, sizes, desc, swatch: selectedSwatch, images: uploadedImages };
+  payload.variants = variantsPayload;      // пусто = товар без вкусов (общий остаток)
   const btn = document.getElementById('saveBtn');
   btn.disabled = true;
   try {
@@ -1995,6 +2546,11 @@ renderQuestions = function() {
 const originalRenderPromos = renderPromos;
 renderPromos = function() {
   originalRenderPromos();
+  setTimeout(observeReveals, 100);
+};
+const originalRenderAnnouncements = renderAnnouncements;
+renderAnnouncements = function() {
+  originalRenderAnnouncements();
   setTimeout(observeReveals, 100);
 };
 </script>
